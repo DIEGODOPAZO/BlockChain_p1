@@ -1,0 +1,18 @@
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración de editores
+.vscode/
+.idea/
+
+# Variables sensibles (si llegas a usar un archivo de entorno)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
