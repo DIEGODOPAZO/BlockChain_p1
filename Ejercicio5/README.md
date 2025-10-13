@@ -20,7 +20,7 @@
 
 ### 1.1 Resumen del escenario
 
-Se desea construir una DApp (aplicación descentralizada) que gestione loterías online sobre una blockchain pública (Ethereum). La DApp permitirá crear y gestionar loterías en las que los participantes compran entradas (tickets) por un precio fijo, y al cerrar la lotería se selecciona un ganador aleatorio que recibe el bote menos comisiones. Las loterías serán **públicas**, cualquier dirección puede unirse (o en una futura implementación, también **privadas**, sólo direcciones invitadas pueden unirse). Los creadores del contrato y los creadores de una lotería en concreto reciben una comisión sobre el total del bote (por defecto 1%).
+Se desea construir una DApp (aplicación descentralizada) que gestione loterías online sobre una blockchain pública (Ethereum). La DApp permitirá crear y gestionar loterías en las que los participantes compran entradas (tickets) por un precio fijo, y al cerrar la lotería se selecciona un ganador aleatorio que recibe el bote menos comisiones. Las loterías son **públicas** (cualquier dirección puede unirse). En futuras versiones se podrían implementar versiones privadas mediante listas de invitados. Los creadores del contrato y los creadores de una lotería en concreto reciben una comisión sobre el total del bote (por defecto 1%).
 
   
 
@@ -219,7 +219,6 @@ struct Lottery {
 
 - `address public owner; // administrador del contrato`
 
-- (Opcional) `address public vrfCoordinator;` y variables de Chainlink VRF.
 
   
 
@@ -272,7 +271,7 @@ struct Lottery {
 
 - `closeLottery(uint256 lotteryId) external`
 
-  - Marca la lotería cerrada (en un futuro, solicita aleatoriedad a Chainlink VRF o calcula RNG fallback).
+  - Marca la lotería cerrada y ejecuta la función interna de determinación del ganador mediante un número pseudoaleatorio generado con keccak256. En futuras versiones se podrá integrar un oráculo de aleatoriedad verificable.
 
   - Sólo el creator o el owner (según reglas) pueden cerrar; también puede cerrarse automáticamente por condiciones (fueque implementado en off-chain frontend o con check on-chain).
 
