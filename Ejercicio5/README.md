@@ -111,14 +111,14 @@ Casos de uso principales:
 
 ```mermaid
 graph TD
-    %% Actores
+    %% Actores (parte superior)
     A[Owner Admin]
     B[Creator de Loteria]
     C[Participante]
     D[Oraculo Chainlink VRF]
     E[Front-end DApp]
 
-    %% Casos de uso
+    %% Casos de uso (parte inferior)
     UC1[Crear loteria]
     UC2[Unirse o Comprar ticket]
     UC3[Modificar comision]
@@ -126,7 +126,7 @@ graph TD
     UC5[Reclamar premio]
     UC6[Consultar estado y resultados]
 
-    %% Relaciones
+    %% Relaciones verticales
     A --> UC3
     A --> UC4
     A --> UC6
@@ -148,6 +148,14 @@ graph TD
     E --> UC4
     E --> UC5
     E --> UC6
+
+    %% Estilo para diferenciar
+    classDef actor fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef useCase fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    
+    class A,B,C,D,E actor
+    class UC1,UC2,UC3,UC4,UC5,UC6 useCase
+
 
 ```
   
@@ -300,24 +308,9 @@ struct Lottery {
 
 - Internamente, las comisiones se representan en *basis points* (puntos base) con base 10000 para representar porcentajes con dos decimales:
 
-  - 200 = 2.00% por defecto.
+  - 200 = 2.00% por defecto. (100 for the owner 100 for the creator)
 
-- Comisión editable por `owner` o por `creator` (según permiso definido). Cambios sólo permitidos mientras la lotería no esté cerrada y si no han vendido tickets (o se permite cambiar incluso con tickets vendidos — decisión a tomar; aquí se restringe a antes de la venta o se hace un tope).
-
-  
-
-#### Elección del ganador (aleatoriedad)
-
-- Recomendado: **Chainlink VRF** para evitar manipulación por mineros o creadores.
-
-- Fallback (no recomendado para producción): usar `uint256(keccak256(abi.encodePacked(blockhash(block.number-1), block.timestamp, ticketsSold)))`.
-
-- Mapeo de índice aleatorio a ganador:
-
-  - Si se almacenan tickets como entradas repetidas en array `address[] ticketOwners` donde cada compra añade la dirección `quantity` veces, entonces `randomIndex = randomness % ticketOwners.length` y `winner = ticketOwners[randomIndex]`.
-
-  - Para eficiencia de gas, se puede almacenar rangos y usar cumulative counts por participante.
-
+- Comisión editable por `owner`. 
   
 
 #### Privacidad / Invitados
@@ -326,31 +319,8 @@ struct Lottery {
 
   - Opción simple: `mapping(uint256 => mapping(address => bool)) invited;`
 
-  - Opción escalable/privada: usar `Merkle root` y `merkle proof` en `buyTickets` para demostrar inclusión sin almacenar lista completa on-chain.
-
-  
-
-#### Seguridad
-
-- Proteger contra reentrancy (`ReentrancyGuard`).
-
-- Usar `withdraw` pattern para pagos en lugar de `transfer` en la medida que la lógica lo requiera.
-
-- Validar límites: porcentaje máximo de comisión (p.ej. 10% = 1000 basis points).
-
-- Validar que `ticketPrice > 0`.
-
-- Evitar loops grandes en funciones que se ejecutan on-chain (p.ej., no iterar larga lista de participantes en una sola tx).
-
-  
 
 ### 2.5 Contratos y módulos sugeridos
-
-- `LotteryFactory` (opcional): contrato que crea loterías y registra ids.
-
-- `Lottery` (structs/logic dentro de un contrato principal).
-
-- Integración con Chainlink VRF (contrato principal hereda `VRFConsumerBaseV2` o similar).
 
 - Uso de `Ownable`, `ReentrancyGuard`, `Pausable` (OpenZeppelin).
 
@@ -366,21 +336,15 @@ struct Lottery {
 
 4. **Fulfill VRF**: Oráculo -> `fulfillRandomness` -> contrato calcula ganador, transfiere fondos al ganador y comisión al owner (o guarda estado y permite `claimPrize`).
 
-5. **Reclamación opcional**: Ganador -> `claimPrize` (si no se pagó automáticamente).
+5. **Reclamación opcional**: Ganador -> `claimPrize` (no se paga automáticamente).
 
   
 
 ### 2.7 Consideraciones de diseño adicionales
 
-- **Modelo de almacenamiento de tickets**: por simplicidad y claridad en el ejercicio, podemos implementar `address[] ticketOwners` donde cada compra push la dirección `quantity` veces. Es más caro en gas pero más simple de implementar y de entender (adecuado para proyecto académico). Documentar las desventajas y alternativas (rangos, cumulative weights).
-
-- **Comisión editable**: permitir cambiar la comisión si la lotería no está cerrada y no tiene tickets vendidos; o permitir siempre pero documentarlo (impacto en entradas ya vendidas).
+- **Modelo de almacenamiento de tickets**: por simplicidad y claridad en el ejercicio, podemos implementar `address[] ticketOwners` donde cada compra push la dirección `quantity` veces.
 
 - **Cancelación y reembolsos**: definir cuando se permiten (ej. si no se alcanzó mínimo de tickets).
-
-- **Manejo de ETH**: guardar los fondos en el contrato y distribuir en `fulfillRandomness` usando patrón `send/transfer` o `call` con checks-effects-interactions.
-
-- **Front-end**: la DApp (React + Web3/ethers.js) será responsable de construir y mostrar formularios para crear loterías, comprar tickets (firmar tx), y mostrar resultados.
 
   
 
@@ -409,23 +373,6 @@ struct Lottery {
 - `getTicketsCount(uint256 lotteryId) view returns (uint256)`
 
   
-
----
-
-  
-
-## Conclusión y siguiente paso sugerido
-
-Con este análisis y diseño tienes una especificación suficiente para implementar el contrato en Solidity. Recomendado:
-
-1. Implementar un prototipo sencillo que use `address[] ticketOwners` para claridad.
-
-2. Integrar defensas básicas (OpenZeppelin: `Ownable`, `ReentrancyGuard`).
-
-3. Para producción, sustituir la aleatoriedad por Chainlink VRF y optimizar el almacenamiento de tickets (rangos o estructuras compuestas).
-
-  
-
 ---
 
   
