@@ -320,7 +320,7 @@ struct Lottery {
   - Opción simple: `mapping(uint256 => mapping(address => bool)) invited;`
 
 
-### 2.5 Contratos y módulos sugeridos
+### 2.5 Contratos y módulos
 
 - Uso de `Ownable`, `ReentrancyGuard`, `Pausable` (OpenZeppelin).
 
