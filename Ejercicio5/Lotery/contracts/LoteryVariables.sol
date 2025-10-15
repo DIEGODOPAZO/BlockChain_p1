@@ -1,0 +1,1 @@
+// La struct y las funciones para lectura y eventos
