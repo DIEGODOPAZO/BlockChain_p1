@@ -116,7 +116,6 @@ graph TD
     A[Owner Admin]
     B[Creator de Loteria]
     C[Participante]
-    D[Oraculo Chainlink VRF]
     E[Front-end DApp]
 
     %% Casos de uso (parte inferior)
@@ -141,8 +140,6 @@ graph TD
     C --> UC5
     C --> UC6
 
-    D --> UC4
-
     E --> UC1
     E --> UC2
     E --> UC3
@@ -154,7 +151,7 @@ graph TD
     classDef actor fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     classDef useCase fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
     
-    class A,B,C,D,E actor
+    class A,B,C,E actor
     class UC1,UC2,UC3,UC4,UC5,UC6 useCase
 
 
@@ -196,8 +193,6 @@ struct Lottery {
     bool closed;
 
     address winner;
-
-    uint256 randomRequestId;   // id de la request a VRF (si aplica)
 
     uint256 pot;               // total acumulado (opcional si se calcula dinámicamente)
 
@@ -277,7 +272,7 @@ struct Lottery {
 
 - `fulfillRandomness(bytes32 requestId, uint256 randomness) internal` (Chainlink callback)
 
-  - Callback que recibe el número aleatorio y selecciona ganador usando `randomness % ticketsSold` (mapear índice a ticket/owner).
+  - Función interna que realiza la selección del ganador usando un número pseudoaleatorio (fallback). En versiones futuras podría conectarse a un oráculo (VRF).
 
 - `claimPrize(uint256 lotteryId) external`
 
@@ -320,9 +315,10 @@ struct Lottery {
 
 2. **Compra de tickets**: Participante -> `buyTickets(lotteryId)` -> evento `TicketPurchased` (se actualiza `ticketsSold`).
 
-3. **Cerrar lotería**: Creator/Owner -> `closeLottery` -> (si VRF) `requestRandomness` -> evento `LotteryClosed`.
+3. **Cerrar lotería**: Creator/Owner -> `closeLottery` -> evento `LotteryClosed`.
 
-4. **Determinación del ganador**: Pseudoaleatorio -> `fulfillRandomness` -> el contrato calcula el ganador utilizando un número pseudoaleatorio generado con keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender)) % ticketsSold, transfiere los fondos al ganador y la comisión al owner (o guarda el estado y permite claimPrize).
+4. **Determinación del ganador**: Pseudoaleatorio → función interna → el contrato calcula el ganador utilizando un número pseudoaleatorio generado con `uint256 rnd = uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))) % ticketsSold;` 
+
 
 5. **Reclamación opcional**: Ganador -> `claimPrize` (no se paga automáticamente).
 
@@ -342,15 +338,13 @@ struct Lottery {
 
 ## Apéndice — Ejemplo compacto de la API pública (prototipo)
 
-- `createLottery(string name, uint256 ticketPrice, uint256 maxTickets, uint256 endTime, bool isPrivate, address[] invited, uint256 commissionBps) returns (uint256 lotteryId)`
+- `createLottery(string name, uint256 ticketPrice, uint256 maxTickets, uint256 endTime, uint256 commissionBps) returns (uint256 lotteryId)`
 
 - `buyTickets(uint256 lotteryId, uint256 quantity) payable`
 
 - `closeLottery(uint256 lotteryId)`
 
 - `requestRandom(uint256 lotteryId)` (si no se hace automáticamente en close)
-
-- `fulfillRandom(uint256 lotteryId, uint256 randomness)` (callback interno)
 
 - `claimPrize(uint256 lotteryId)` (si necesario)
 
