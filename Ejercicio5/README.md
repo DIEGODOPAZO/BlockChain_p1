@@ -99,7 +99,7 @@ Casos de uso principales:
 
 2. Unirse/comprar ticket (Participante).  
 
-3. Modificar comisión (Owner).  
+3. Modificar comisión (Owner, Creator).  
 
 4. Cerrar lotería y determinar ganador (Creator).  
 
@@ -299,7 +299,7 @@ struct Lottery {
 
   - 200 = 2.00% por defecto. (100 for the owner 100 for the creator)
 
-- Comisión editable por `owner`. 
+- Comisión editable por `owner` o `creator`. 
   
 
 
