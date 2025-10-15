@@ -1,0 +1,51 @@
+# Solidity / Ethereum development
+
+# Ignore node dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Ignore build artifacts
+artifacts/
+cache/
+typechain/
+typechain-types/
+coverage/
+coverage.json
+
+# Ignore environment and secret files
+.env
+.env.local
+.env.*.local
+
+# Ignore temporary Remix or Hardhat files
+remixd-storage/
+*.pid
+*.log
+tmp/
+temp/
+
+# Ignore compiled contract outputs
+*.abi
+*.bin
+
+# Ignore IDE / editor settings
+.vscode/
+.idea/
+*.swp
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore testing outputs
+coverage/
+coverage.json
+gas-report.txt
+
+# Ignore any private keys or secrets (just in case)
+privatekey.txt
+secrets.json
+
+# Ignore miscellaneous
+*.tsbuildinfo
