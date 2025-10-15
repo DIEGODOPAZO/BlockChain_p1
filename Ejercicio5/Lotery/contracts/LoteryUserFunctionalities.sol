@@ -7,7 +7,7 @@ pragma solidity >=0.8.2 <0.9.0;
 import "./LotteryVariables.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract LotteryUserFunctionalities is LoteryVariables{
+contract LotteryUserFunctionalities is LotteryVariables{
     using SafeMath for uint256;
 
     function buyTickets(uint256 lotteryId, uint256 quantity) external payable{

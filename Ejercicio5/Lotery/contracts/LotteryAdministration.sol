@@ -7,7 +7,7 @@ import "./LoteryUserFunctionalities.sol";
  * @title LoteryAdministration
  * @dev Funciones administrativas para crear y gestionar loterías
  */
-contract LoteryAdministration is LoteryUserFunctionalities {
+contract LotteryAdministration is LotteryUserFunctionalities {
     
     /**
      * @notice Crea una nueva lotería

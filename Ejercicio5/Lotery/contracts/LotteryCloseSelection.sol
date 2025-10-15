@@ -7,7 +7,7 @@ import "./LoteryUserFunctionalities.sol";
  * @title LoteryCloseSelection
  * @dev Maneja el cierre de loterías y selección de ganadores
  */
-contract LoteryCloseSelection is LoteryUserFunctionalities {
+contract LotteryCloseSelection is LotteryUserFunctionalities {
     
     /**
      * @notice Cierra una lotería y selecciona un ganador

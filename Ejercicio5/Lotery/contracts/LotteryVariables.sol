@@ -9,7 +9,7 @@ import "./GetRandom.sol";
  * @title LotteryVariables
  * @dev Defines the struct Lottery, functionalities for retrievin info and events
  */
-contract LoteryVariables is GetRandom{
+contract LotteryVariables is GetRandom{
     // Eventos
 
     /// @notice Se emite cuando se crea una nueva lotería
