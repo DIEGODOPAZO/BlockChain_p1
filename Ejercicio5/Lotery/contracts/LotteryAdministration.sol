@@ -1,55 +1,67 @@
-//SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.2 <0.9.0;
 
-import "./LoteryUserFunctionalities.sol";
+import "./LotteryUserFunctionalities.sol";
 
 /**
- * @title LoteryAdministration
+ * @title LotteryAdministration
  * @dev Funciones administrativas para crear y gestionar loterías
  */
 contract LotteryAdministration is LotteryUserFunctionalities {
     
+    // Comisión máxima permitida (10%)
+    uint256 public constant MAX_COMMISSION_PERCENT = 1000;
+    
+    // Constructor para inicializar el owner
+    constructor() {
+        owner = msg.sender;
+        nextLotteryId = 0;
+    }
+    
     /**
      * @notice Crea una nueva lotería
-     * @param _name Nombre de la lotería
-     * @param _ticketPrice Precio por ticket en wei
-     * @param _maxTickets Límite de tickets (0 = sin límite)
-     * @param _endTime Timestamp de cierre (0 = manual)
-     * @param _commissionPercent Porcentaje de comisión (0 = usar default, base 10000)
+     * @param name Nombre de la lotería
+     * @param ticketPrice Precio por ticket en wei
+     * @param maxTickets Límite de tickets (0 = sin límite)
+     * @param endTime Timestamp de cierre (0 = manual)
+     * @param commissionPercent Porcentaje de comisión (0 = usar default)
      * @return ID de la lotería creada
      */
     function createLottery(
-        string memory _name,
-        uint256 _ticketPrice,
-        uint256 _maxTickets,
-        uint256 _endTime,
-        uint256 _commissionPercent
+        string memory name,
+        uint256 ticketPrice,
+        uint256 maxTickets,
+        uint256 endTime,
+        uint256 commissionPercent
     ) external returns (uint256) {
-        require(_ticketPrice > 0, "El precio del ticket debe ser mayor a 0");
+        require(ticketPrice > 0, "Ticket price must be > 0");
         require(
-            _endTime == 0 || _endTime > block.timestamp,
-            "endTime debe ser futuro o 0 para cierre manual"
+            endTime == 0 || endTime > block.timestamp,
+            "Invalid end time"
         );
         
         // Usar comisión custom o default
-        uint256 commission = _commissionPercent == 0 ? defaultCommissionPercent : _commissionPercent;
-        require(commission <= MAX_COMMISSION_PERCENT, "Comision excede el maximo (10%)");
+        uint256 commission = commissionPercent == 0 
+            ? defaultCommissionPercent 
+            : commissionPercent;
+        
+        require(commission <= MAX_COMMISSION_PERCENT, "Commission too high");
         
         uint256 lotteryId = nextLotteryId;
         
-        Lottery storage newLottery = lotteries[lotteryId];
-        newLottery.id = lotteryId;
-        newLottery.creator = msg.sender;
-        newLottery.name = _name;
-        newLottery.ticketPrice = _ticketPrice;
-        newLottery.maxTickets = _maxTickets;
-        newLottery.ticketsSold = 0;
-        newLottery.startTime = block.timestamp;
-        newLottery.endTime = _endTime;
-        newLottery.commissionPercent = commission;
-        newLottery.closed = false;
-        newLottery.winner = address(0);
-        newLottery.pot = 0;
+        Lottery storage newLot = lotteries[lotteryId];
+        newLot.id = lotteryId;
+        newLot.creator = msg.sender;
+        newLot.name = name;
+        newLot.ticketPrice = ticketPrice;
+        newLot.maxTickets = maxTickets;
+        newLot.ticketsSold = 0;
+        newLot.startTime = block.timestamp;
+        newLot.endTime = endTime;
+        newLot.commissionPercent = commission;
+        newLot.closed = false;
+        newLot.winner = address(0);
+        newLot.pot = 0;
         
         nextLotteryId++;
         
@@ -60,62 +72,71 @@ contract LotteryAdministration is LotteryUserFunctionalities {
     
     /**
      * @notice Modifica la comisión por defecto del contrato
-     * @param _newPercent Nuevo porcentaje (base 10000, ej: 200 = 2%)
+     * @param newPercent Nuevo porcentaje (base 10000)
      */
-    function setDefaultCommissionPercent(uint256 _newPercent) external onlyOwner {
-        require(_newPercent <= MAX_COMMISSION_PERCENT, "Comision excede el maximo (10%)");
-        defaultCommissionPercent = _newPercent;
+    function setDefaultCommissionPercent(uint256 newPercent) external {
+        require(msg.sender == owner, "Only owner");
+        require(newPercent <= MAX_COMMISSION_PERCENT, "Commission too high");
+        
+        defaultCommissionPercent = newPercent;
     }
     
     /**
-     * @notice Modifica la comisión de una lotería antes de cerrarla
-     * @param _lotteryId ID de la lotería
-     * @param _newPercent Nuevo porcentaje (base 10000)
+     * @notice Modifica la comisión de una lotería específica
+     * @param lotteryId ID de la lotería
+     * @param newPercent Nuevo porcentaje
      */
-    function setLotteryCommission(uint256 _lotteryId, uint256 _newPercent) 
-        external 
-        onlyCreatorOrOwner(_lotteryId)
-        lotteryExists(_lotteryId)
-        lotteryOpen(_lotteryId)
-    {
-        require(_newPercent <= MAX_COMMISSION_PERCENT, "Comision excede el maximo (10%)");
+    function setLotteryCommission(uint256 lotteryId, uint256 newPercent) external {
+        Lottery storage lot = lotteries[lotteryId];
         
-        uint256 oldPercent = lotteries[_lotteryId].commissionPercent;
-        lotteries[_lotteryId].commissionPercent = _newPercent;
+        require(
+            msg.sender == lot.creator || msg.sender == owner,
+            "Only creator or owner"
+        );
+        require(lotteryId < nextLotteryId, "Lottery does not exist");
+        require(!lot.closed, "Lottery is closed");
+        require(newPercent <= MAX_COMMISSION_PERCENT, "Commission too high");
         
-        emit CommissionChanged(_lotteryId, oldPercent, _newPercent);
+        uint256 oldPercent = lot.commissionPercent;
+        lot.commissionPercent = newPercent;
+        
+        emit CommissionChanged(lotteryId, oldPercent, newPercent);
     }
     
     /**
-     * @notice Obtiene IDs de loterías creadas por un usuario
-     * @param _creator Dirección del creador
+     * @notice Obtiene loterías creadas por un usuario
+     * @param creator Dirección del creador
      * @return Array con IDs de sus loterías
      */
-    function getLotteriesByCreator(address _creator) external view returns (uint256[] memory) {
+    function getLotteriesByCreator(address creator) 
+        external 
+        view 
+        returns (uint256[] memory) 
+    {
         // Contar loterías del creador
         uint256 count = 0;
         for (uint256 i = 0; i < nextLotteryId; i++) {
-            if (lotteries[i].creator == _creator) {
+            if (lotteries[i].creator == creator) {
                 count++;
             }
         }
         
         // Crear y llenar array
-        uint256[] memory creatorLotteries = new uint256[](count);
+        uint256[] memory result = new uint256[](count);
         uint256 index = 0;
         
         for (uint256 i = 0; i < nextLotteryId; i++) {
-            if (lotteries[i].creator == _creator) {
-                creatorLotteries[index] = i;
+            if (lotteries[i].creator == creator) {
+                result[index] = i;
                 index++;
             }
         }
         
-        return creatorLotteries;
+        return result;
     }
     
     /**
-     * @notice Obtiene IDs de loterías activas (abiertas)
+     * @notice Obtiene loterías activas (abiertas)
      * @return Array con IDs de loterías activas
      */
     function getActiveLotteries() external view returns (uint256[] memory) {
@@ -129,46 +150,83 @@ contract LotteryAdministration is LotteryUserFunctionalities {
         }
         
         // Crear y llenar array
-        uint256[] memory activeLotteries = new uint256[](count);
+        uint256[] memory result = new uint256[](count);
         uint256 index = 0;
         
         for (uint256 i = 0; i < nextLotteryId; i++) {
             if (!lotteries[i].closed && 
                 (lotteries[i].endTime == 0 || block.timestamp < lotteries[i].endTime)) {
-                activeLotteries[index] = i;
+                result[index] = i;
                 index++;
             }
         }
         
-        return activeLotteries;
+        return result;
     }
     
     /**
      * @notice Verifica si una lotería puede cerrarse
-     * @param _lotteryId ID de la lotería
+     * @param lotteryId ID de la lotería
      * @return true si puede cerrarse
      */
-    function canCloseLottery(uint256 _lotteryId) external view lotteryExists(_lotteryId) returns (bool) {
-        Lottery storage lottery = lotteries[_lotteryId];
+    function canCloseLottery(uint256 lotteryId) external view returns (bool) {
+        require(lotteryId < nextLotteryId, "Lottery does not exist");
         
-        if (lottery.closed || lottery.ticketsSold == 0) {
+        Lottery storage lot = lotteries[lotteryId];
+        
+        if (lot.closed || lot.ticketsSold == 0) {
             return false;
         }
         
-        // Puede cerrarse si alcanzó maxTickets o expiró tiempo
-        if (lottery.maxTickets > 0 && lottery.ticketsSold >= lottery.maxTickets) {
+        // Puede cerrarse si alcanzó maxTickets
+        if (lot.maxTickets > 0 && lot.ticketsSold >= lot.maxTickets) {
             return true;
         }
         
-        if (lottery.endTime > 0 && block.timestamp >= lottery.endTime) {
+        // Puede cerrarse si expiró tiempo
+        if (lot.endTime > 0 && block.timestamp >= lot.endTime) {
             return true;
         }
         
-        return true; // Siempre puede cerrarse manualmente
+        // Siempre puede cerrarse manualmente
+        return true;
     }
     
-    // Implementación requerida por herencia
-    function _autoCloseLottery(uint256 _lotteryId) internal virtual override {
-        revert("Debe ser implementada por contrato final");
+    /**
+     * @notice Obtiene el número total de loterías creadas
+     * @return Total de loterías
+     */
+    function getTotalLotteries() external view returns (uint256) {
+        return nextLotteryId;
+    }
+    
+    /**
+     * @notice Obtiene estadísticas de un participante
+     * @param participant Dirección del participante
+     * @return lotteriesParticipated Número de loterías participadas
+     * @return totalTickets Total de tickets comprados
+     * @return lotteriesWon Número de loterías ganadas
+     */
+    function getParticipantStats(address participant)
+        external
+        view
+        returns (
+            uint256 lotteriesParticipated,
+            uint256 totalTickets,
+            uint256 lotteriesWon
+        )
+    {
+        for (uint256 i = 0; i < nextLotteryId; i++) {
+            uint256 tickets = lotteries[i].ticketsByAddress[participant];
+            if (tickets > 0) {
+                lotteriesParticipated++;
+                totalTickets += tickets;
+            }
+            if (lotteries[i].winner == participant) {
+                lotteriesWon++;
+            }
+        }
+        
+        return (lotteriesParticipated, totalTickets, lotteriesWon);
     }
 }
