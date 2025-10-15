@@ -9,7 +9,7 @@ import "./LotteryAdministration.sol";
  * @dev Contrato principal que combina toda la funcionalidad
  * @notice Este es el contrato que debe desplegarse
  */
-contract LotteryDApp is LotteryCloseSelection, LotteryAdministration {
+contract Lottery is LotteryCloseSelection, LotteryAdministration {
     
     /**
      * @notice Obtiene resumen del estado del contrato
