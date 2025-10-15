@@ -61,7 +61,7 @@ contract LotteryCloseSelection is LotteryUserFunctionalities {
         Lottery storage lot = lotteries[lotteryId];
         
         // Generar número aleatorio entre 0 y total de tickets
-        uint256 winningTicketNumber = _generateRandomNumber(lot.ticketsSold);
+        uint256 winningTicketNumber = getRandom(lot.ticketsSold);
         
         // Encontrar ganador basado en distribución ponderada
         address winner = _findWinnerByTicketNumber(lotteryId, winningTicketNumber);
