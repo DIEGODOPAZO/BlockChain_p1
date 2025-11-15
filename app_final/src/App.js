@@ -155,6 +155,7 @@ function App() {
         console.error("Error copiando al portapapeles:", err);
       }
     } catch (error) {
+      alert(error.message);
       console.log(error.message);
     }
   };

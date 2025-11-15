@@ -128,7 +128,16 @@ function App() {
       console.log(result.cid)
       // añadir el CID de ipfs a ethereum a traves del smart contract
       await setFileIPFS(result.cid.toString());
+
+       // Copiar al portapapeles
+      try {
+        await navigator.clipboard.writeText(result.cid.toString());
+        alert(`¡CID copiado al portapapeles! ${result.cid.toString()}`);
+      } catch (err) {
+        console.error("Error copiando al portapapeles:", err);
+      }
     } catch (error) {
+      alert(error.message);
       console.log(error.message);
     }
   };
