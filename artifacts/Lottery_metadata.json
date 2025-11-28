@@ -1,0 +1,901 @@
+{
+	"compiler": {
+		"version": "0.8.30+commit.73712a01"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "oldPercent",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "newPercent",
+						"type": "uint256"
+					}
+				],
+				"name": "CommissionChanged",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "closer",
+						"type": "address"
+					}
+				],
+				"name": "LotteryClosed",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "creator",
+						"type": "address"
+					}
+				],
+				"name": "LotteryCreated",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "buyer",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "quantity",
+						"type": "uint256"
+					}
+				],
+				"name": "TicketPurchased",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "winner",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "prize",
+						"type": "uint256"
+					}
+				],
+				"name": "WinnerSelected",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "MAX_COMMISSION_PERCENT",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "activeLotteriesCount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "quantity",
+						"type": "uint256"
+					}
+				],
+				"name": "buyTickets",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "canCloseLottery",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "claimPrize",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "closeLottery",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "ticketPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "maxTickets",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "endTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "commissionPercent",
+						"type": "uint256"
+					}
+				],
+				"name": "createLottery",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "defaultCommissionPercent",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getActiveLotteries",
+				"outputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "",
+						"type": "uint256[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getContractSummary",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "totalLotteries",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "activeLotteries",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "contractOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "defaultCommission",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "creator",
+						"type": "address"
+					}
+				],
+				"name": "getLotteriesByCreator",
+				"outputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "",
+						"type": "uint256[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getLotteryInfo",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "id",
+								"type": "uint256"
+							},
+							{
+								"internalType": "address",
+								"name": "creator",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"internalType": "uint256",
+								"name": "ticketPrice",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "maxTickets",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "ticketsSold",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "startTime",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "endTime",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "commissionPercent",
+								"type": "uint256"
+							},
+							{
+								"internalType": "bool",
+								"name": "closed",
+								"type": "bool"
+							},
+							{
+								"internalType": "address",
+								"name": "winner",
+								"type": "address"
+							},
+							{
+								"internalType": "uint256",
+								"name": "pot",
+								"type": "uint256"
+							},
+							{
+								"internalType": "address[]",
+								"name": "participants",
+								"type": "address[]"
+							}
+						],
+						"internalType": "struct LotteryStorage.LotteryView",
+						"name": "",
+						"type": "tuple"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "participant",
+						"type": "address"
+					}
+				],
+				"name": "getMyTickets",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "participant",
+						"type": "address"
+					}
+				],
+				"name": "getParticipantStats",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteriesParticipated",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalTickets",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "lotteriesWon",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getParticipants",
+				"outputs": [
+					{
+						"internalType": "address[]",
+						"name": "",
+						"type": "address[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					}
+				],
+				"name": "getPendingWithdrawal",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "getTicketsOf",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getTotalLotteries",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "lotteries",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "creator",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "ticketPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "maxTickets",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "ticketsSold",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "startTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "endTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "commissionPercent",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "closed",
+						"type": "bool"
+					},
+					{
+						"internalType": "address",
+						"name": "winner",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "pot",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "nextLotteryId",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "pendingWithdrawals",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "newPercent",
+						"type": "uint256"
+					}
+				],
+				"name": "setDefaultCommissionPercent",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "newPercent",
+						"type": "uint256"
+					}
+				],
+				"name": "setLotteryCommission",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "withdraw",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"details": "Contrato principal con toda la lógica del sistema de lotería",
+			"kind": "dev",
+			"methods": {
+				"canCloseLottery(uint256)": {
+					"params": {
+						"lotteryId": "ID de la lotería"
+					},
+					"returns": {
+						"_0": "true si puede cerrarse"
+					}
+				},
+				"claimPrize(uint256)": {
+					"params": {
+						"lotteryId": "ID de la lotería"
+					}
+				},
+				"closeLottery(uint256)": {
+					"params": {
+						"lotteryId": "ID de la lotería a cerrar"
+					}
+				},
+				"createLottery(string,uint256,uint256,uint256,uint256)": {
+					"params": {
+						"commissionPercent": "Porcentaje de comisión (0 = usar default)",
+						"endTime": "Timestamp de cierre (0 = manual)",
+						"maxTickets": "Límite de tickets (0 = sin límite)",
+						"name": "Nombre de la lotería",
+						"ticketPrice": "Precio por ticket en wei"
+					},
+					"returns": {
+						"_0": "ID de la lotería creada"
+					}
+				},
+				"getActiveLotteries()": {
+					"returns": {
+						"_0": "Array con IDs de loterías activas"
+					}
+				},
+				"getContractSummary()": {
+					"returns": {
+						"activeLotteries": "Número de loterías activas",
+						"contractOwner": "Dirección del propietario",
+						"defaultCommission": "Comisión por defecto",
+						"totalLotteries": "Total de loterías creadas"
+					}
+				},
+				"getLotteriesByCreator(address)": {
+					"params": {
+						"creator": "Dirección del creador"
+					},
+					"returns": {
+						"_0": "Array con IDs de sus loterías"
+					}
+				},
+				"getParticipantStats(address)": {
+					"params": {
+						"participant": "Dirección del participante"
+					},
+					"returns": {
+						"lotteriesParticipated": "Número de loterías participadas",
+						"lotteriesWon": "Número de loterías ganadas",
+						"totalTickets": "Total de tickets comprados"
+					}
+				},
+				"getPendingWithdrawal(address)": {
+					"params": {
+						"account": "Dirección a consultar"
+					},
+					"returns": {
+						"_0": "Cantidad pendiente de retirar en wei"
+					}
+				},
+				"getTotalLotteries()": {
+					"returns": {
+						"_0": "Total de loterías"
+					}
+				},
+				"setDefaultCommissionPercent(uint256)": {
+					"params": {
+						"newPercent": "Nuevo porcentaje (base 10000)"
+					}
+				},
+				"setLotteryCommission(uint256,uint256)": {
+					"params": {
+						"lotteryId": "ID de la lotería",
+						"newPercent": "Nuevo porcentaje"
+					}
+				},
+				"withdraw()": {
+					"details": "Patrón Pull: los usuarios retiran cuando quieran"
+				}
+			},
+			"title": "Lottery",
+			"version": 1
+		},
+		"userdoc": {
+			"events": {
+				"CommissionChanged(uint256,uint256,uint256)": {
+					"notice": "Se emite cuando se modifica la comisión de una lotería"
+				},
+				"LotteryClosed(uint256,address)": {
+					"notice": "Se emite cuando se cierra una lotería"
+				},
+				"LotteryCreated(uint256,address)": {
+					"notice": "Se emite cuando se crea una nueva lotería"
+				},
+				"TicketPurchased(uint256,address,uint256)": {
+					"notice": "Se emite cuando un usuario compra boletos"
+				},
+				"WinnerSelected(uint256,address,uint256)": {
+					"notice": "Se emite cuando se selecciona un ganador"
+				}
+			},
+			"kind": "user",
+			"methods": {
+				"canCloseLottery(uint256)": {
+					"notice": "Verifica si una lotería puede cerrarse"
+				},
+				"claimPrize(uint256)": {
+					"notice": "Permite al ganador reclamar su premio"
+				},
+				"closeLottery(uint256)": {
+					"notice": "Cierra una lotería y selecciona un ganador"
+				},
+				"createLottery(string,uint256,uint256,uint256,uint256)": {
+					"notice": "Crea una nueva lotería"
+				},
+				"getActiveLotteries()": {
+					"notice": "Obtiene loterías activas (abiertas)"
+				},
+				"getContractSummary()": {
+					"notice": "Obtiene resumen del estado del contrato"
+				},
+				"getLotteriesByCreator(address)": {
+					"notice": "Obtiene loterías creadas por un usuario"
+				},
+				"getParticipantStats(address)": {
+					"notice": "Obtiene estadísticas de un participante"
+				},
+				"getPendingWithdrawal(address)": {
+					"notice": "Consulta el saldo pendiente de retiro de una dirección"
+				},
+				"getTotalLotteries()": {
+					"notice": "Obtiene el número total de loterías creadas"
+				},
+				"setDefaultCommissionPercent(uint256)": {
+					"notice": "Modifica la comisión por defecto del contrato"
+				},
+				"setLotteryCommission(uint256,uint256)": {
+					"notice": "Modifica la comisión de una lotería específica"
+				},
+				"withdraw()": {
+					"notice": "Permite a cualquier usuario retirar sus fondos pendientes"
+				}
+			},
+			"notice": "Este es el contrato que debe desplegarse",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"Ejercicio5/Lotery/contracts/Lottery.sol": "Lottery"
+		},
+		"evmVersion": "prague",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"Ejercicio5/Lotery/contracts/GetRandom.sol": {
+			"keccak256": "0xb4c3c222b2ab25483ad43c0695bf30a8f4b75670dfd1760a09f14b0ce0a25012",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://1c6fe09620b1e6b159eaed5d81e23daefd2de668199045fb032484d85c3f5cdb",
+				"dweb:/ipfs/QmcJvi84nMAkfMseTL5tqAZFSUhXetG2mhMFxfeUndzUdi"
+			]
+		},
+		"Ejercicio5/Lotery/contracts/Lottery.sol": {
+			"keccak256": "0xd777ee9d533b9b7ebed9941cffad053cf9945dfb1338e7bea8a52f9c54fe33d8",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://c8570089019eed60b2e8ebbabf63a612e2baff59632b82489213f4c4d2483f7a",
+				"dweb:/ipfs/QmXDSzdbUyU6NcCkceYesAfzqEGzZSXRBAnqN1afhrL2dZ"
+			]
+		},
+		"Ejercicio5/Lotery/contracts/LotteryStorage.sol": {
+			"keccak256": "0xae78d9790170f36a8143d18d2a3f80befa984d91c1eff06650043f07c6f8c5bb",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://6ed0b10d9541e7e45ec0fa0e579f8a2bb28dbbc7cc5b1bf2e0f3114cdd7929f0",
+				"dweb:/ipfs/QmU6TfCmJP98Lz7KvexgTd7t2uQjySE1J6DbrdnRd8pm9F"
+			]
+		}
+	},
+	"version": 1
+}
