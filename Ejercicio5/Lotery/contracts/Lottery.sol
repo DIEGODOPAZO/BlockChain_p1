@@ -222,31 +222,39 @@ contract Lottery is LotteryStorage{
         require(success, "Transfer failed");
     }
     
+    mapping(uint256 => uint256) private vrfRequestToLottery;
+
     // Cierra la lotería y selecciona ganador
     function _closeLottery(uint256 lotteryId) internal {
         Lottery storage lot = lotteries[lotteryId];
         
         lot.closed = true;
-        // corrección
         if (activeLotteriesCount > 0) {
             activeLotteriesCount--;
         }
         emit LotteryClosed(lotteryId, msg.sender);
-        
-        _selectWinnerAndDistribute(lotteryId);
+
+        uint256 requestId = random.requestRandom();
+        vrfRequestToLottery[requestId] = lotteryId;
     }
-    
+        
+    function receiveRandom(uint256 requestId, uint256 randomValue) external {
+        require(msg.sender == address(random), "Only random can call");
+        uint256 lotteryId = vrfRequestToLottery[requestId];
+        require(lotteryId < nextLotteryId, "Invalid lotteryId");
+
+        _selectWinnerAndDistribute(lotteryId, randomValue);
+    }
+
     // corrección
     // Selecciona ganador y distribuye fondos
-    function _selectWinnerAndDistribute(uint256 lotteryId) internal {
+    function _selectWinnerAndDistribute(uint256 lotteryId, uint256 randomValue) internal {
         Lottery storage lot = lotteries[lotteryId];
         
-        require(random.getLastRandom() != 0, "Random not ready");
+        require(lot.ticketsSold > 0, "No tickets sold");
 
-        // Generar número aleatorio entre 0 y total de tickets -1
-        uint256 winningTicketNumber = random.getRandom(lot.ticketsSold);
+        uint256 winningTicketNumber = randomValue % lot.ticketsSold;
         
-        // Encontrar ganador en O(1) usando el mapping
         address winner = _findWinnerByTicketNumber(lotteryId, winningTicketNumber);
         lot.winner = winner;
         

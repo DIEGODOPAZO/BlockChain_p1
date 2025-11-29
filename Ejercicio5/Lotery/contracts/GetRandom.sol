@@ -2,6 +2,7 @@
 
 pragma solidity >=0.8.2 <0.9.0;
 
+import "./Lottery.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
@@ -22,6 +23,8 @@ contract GetRandom is VRFConsumerBaseV2Plus {
     uint16 private constant requestConfirmations = 3;
     uint32 private constant numWords = 1;
 
+    address public lotteryContract;
+
     // último número del VRF
     uint256 private lastRandom;
 
@@ -30,7 +33,11 @@ contract GetRandom is VRFConsumerBaseV2Plus {
 
     constructor() VRFConsumerBaseV2Plus(vrfCoordinator) {}
 
-    
+    function setLotteryContract(address _lottery) external {
+        require(lotteryContract == address(0), "Already set");
+        lotteryContract = _lottery;
+    }
+
     function getRandom(uint _totalTickets) public view returns (uint) {
         require(_totalTickets > 0, "No tickets available");
         require(lastRandom != 0, "VRF random not ready yet");
@@ -57,14 +64,14 @@ contract GetRandom is VRFConsumerBaseV2Plus {
     }
     
     function fulfillRandomWords(
-        uint256,
+        uint256 requestId,
         uint256[] calldata randomWords
     ) internal override {
         lastRandom = randomWords[0];
         emit RandomUpdated(lastRandom);
-    }
 
-    function getLastRandom() public view returns (uint256) {
-        return lastRandom;
+        if (lotteryContract != address(0)) {
+            Lottery(lotteryContract).receiveRandom(requestId, lastRandom);
+        }
     }
 }
