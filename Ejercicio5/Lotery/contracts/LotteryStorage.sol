@@ -12,7 +12,8 @@ contract LotteryStorage {
     // ============================================
     // EVENTOS
     // ============================================
-    
+    event RandomRequestedForLottery(uint256 lotteryId);
+
     /// @notice Se emite cuando se crea una nueva lotería
     event LotteryCreated(
         uint256 indexed lotteryId,
@@ -82,6 +83,7 @@ contract LotteryStorage {
 
         // corrección
         mapping(uint256 => address) ticketOwner; // ticketId, dirección del dueño
+
 
     }
 

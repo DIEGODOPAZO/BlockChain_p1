@@ -9,8 +9,8 @@ import "./GetRandom.sol";
  * @dev Contrato principal con toda la lógica del sistema de lotería
  * @notice Este es el contrato que debe desplegarse
  */
-contract Lottery is LotteryStorage, GetRandom {
-    
+contract Lottery is LotteryStorage{
+    GetRandom public random;
     // ============================================
     // CONSTRUCTOR
     // ============================================
@@ -21,6 +21,8 @@ contract Lottery is LotteryStorage, GetRandom {
         nextLotteryId = 0;
         // corrección
         activeLotteriesCount = 0;
+        // el parametro es el addres del contrato desplegado en sepolia
+        random = GetRandom(0xb8a3Bd562c15F92003Eb464fE73ad29B417C5bc9);
     }
     
     // ============================================
@@ -239,8 +241,10 @@ contract Lottery is LotteryStorage, GetRandom {
     function _selectWinnerAndDistribute(uint256 lotteryId) internal {
         Lottery storage lot = lotteries[lotteryId];
         
+        require(random.getLastRandom() != 0, "Random not ready");
+
         // Generar número aleatorio entre 0 y total de tickets -1
-        uint256 winningTicketNumber = getRandom(lot.ticketsSold);
+        uint256 winningTicketNumber = random.getRandom(lot.ticketsSold);
         
         // Encontrar ganador en O(1) usando el mapping
         address winner = _findWinnerByTicketNumber(lotteryId, winningTicketNumber);
