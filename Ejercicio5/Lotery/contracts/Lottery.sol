@@ -22,7 +22,7 @@ contract Lottery is LotteryStorage{
         // corrección
         activeLotteriesCount = 0;
         // el parametro es el addres del contrato desplegado en sepolia
-        random = GetRandom(0xb8a3Bd562c15F92003Eb464fE73ad29B417C5bc9);
+        random = GetRandom(0x7C053f19C943590fcBf06d8Ad1dF9AC7c48AE807);
     }
     
     // ============================================

@@ -19,7 +19,7 @@ contract GetRandom is VRFConsumerBaseV2Plus {
     uint256 public constant subscriptionId =
         114153670109614787599335688760464154197518994332423782465060328721744434824731;
 
-    uint32 private constant callbackGasLimit = 200000;
+    uint32 private constant callbackGasLimit = 250000;
     uint16 private constant requestConfirmations = 3;
     uint32 private constant numWords = 1;
 
@@ -31,9 +31,9 @@ contract GetRandom is VRFConsumerBaseV2Plus {
     event RandomRequested(uint256 requestId);
     event RandomUpdated(uint256 newRandom);
 
-    constructor() VRFConsumerBaseV2Plus(vrfCoordinator) {}
+    constructor() VRFConsumerBaseV2Plus(vrfCoordinator){}
 
-    function setLotteryContract(address _lottery) external {
+    function setLotteryContract(address _lottery) external onlyOwner {
         require(lotteryContract == address(0), "Already set");
         lotteryContract = _lottery;
     }
@@ -61,6 +61,7 @@ contract GetRandom is VRFConsumerBaseV2Plus {
         requestId = IVRFCoordinatorV2Plus(vrfCoordinator).requestRandomWords(req);
 
         emit RandomRequested(requestId);
+        return requestId;
     }
     
     function fulfillRandomWords(
