@@ -53,6 +53,7 @@ export default function IpfsUploader() {
 
   async function connectWallet() {
     try {
+      if (!window.ethereum) return alert("MetaMask no detectado");
       // Conectar a Sepolia primero
       const provider = await connectToSepolia();
       
