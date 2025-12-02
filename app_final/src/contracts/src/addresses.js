@@ -1,4 +1,5 @@
 const addresses = {
     ipfs:"0xAeb6d6B86C3F2b4FF48c009E28f3435EC15a02aA",
+    lottery: "0x5C422292FBCcEB8D9A79205D43Ac1D65353A56fa", 
 };
 export default addresses;
