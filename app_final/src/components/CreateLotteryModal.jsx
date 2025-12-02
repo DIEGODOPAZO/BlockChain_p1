@@ -23,13 +23,13 @@ export default function CreateLotteryModal({ contract, onClose }) {
         ticketPrice,
         maxTickets,
         timestamp,
-        commission || 0 // por defecto comisión 0
+        commission || 0
       );
 
       await tx.wait();
 
-      alert("Lotería creada!");
       onClose();
+      alert("Lotería creada!");
     } catch (err) {
       console.error(err);
       alert("Error al crear lotería: " + err.message);
@@ -69,7 +69,11 @@ export default function CreateLotteryModal({ contract, onClose }) {
           placeholder="Nombre"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{ padding: "10px", borderRadius: "8px", border: "1px solid gray" }}
+          style={{
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid gray",
+          }}
         />
 
         <input
@@ -77,7 +81,11 @@ export default function CreateLotteryModal({ contract, onClose }) {
           placeholder="Precio ticket (wei)"
           value={ticketPrice}
           onChange={(e) => setTicketPrice(e.target.value)}
-          style={{ padding: "10px", borderRadius: "8px", border: "1px solid gray" }}
+          style={{
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid gray",
+          }}
         />
 
         <input
@@ -85,7 +93,11 @@ export default function CreateLotteryModal({ contract, onClose }) {
           placeholder="Máximo de tickets"
           value={maxTickets}
           onChange={(e) => setMaxTickets(e.target.value)}
-          style={{ padding: "10px", borderRadius: "8px", border: "1px solid gray" }}
+          style={{
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid gray",
+          }}
         />
 
         <input
@@ -93,7 +105,11 @@ export default function CreateLotteryModal({ contract, onClose }) {
           placeholder="Fecha fin"
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
-          style={{ padding: "10px", borderRadius: "8px", border: "1px solid gray" }}
+          style={{
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid gray",
+          }}
         />
 
         <input
@@ -101,7 +117,11 @@ export default function CreateLotteryModal({ contract, onClose }) {
           placeholder="Comisión % (opcional)"
           value={commission}
           onChange={(e) => setCommission(e.target.value)}
-          style={{ padding: "10px", borderRadius: "8px", border: "1px solid gray" }}
+          style={{
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid gray",
+          }}
         />
 
         <button
@@ -114,6 +134,8 @@ export default function CreateLotteryModal({ contract, onClose }) {
             border: "none",
             cursor: "pointer",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#1d4ed8")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#3b82f6")}
         >
           Crear
         </button>
@@ -126,6 +148,8 @@ export default function CreateLotteryModal({ contract, onClose }) {
             border: "1px solid gray",
             background: "white",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f3f3")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
         >
           Cancelar
         </button>
