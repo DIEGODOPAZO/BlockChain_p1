@@ -30,6 +30,12 @@ export default function LotteryStats() {
     }
   };
 
+  // convert to date time
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "—";
+    const date = new Date(timestamp.toNumber() * 1000); // convertir a milisegundos
+    return date.toLocaleString(); // fecha + hora en formato local
+  };
   // --- INIT: Load wallet + contract ---
   useEffect(() => {
     async function init() {
@@ -110,7 +116,6 @@ export default function LotteryStats() {
       const tx = await contract.closeLottery(lotteryId);
       await tx.wait();
       fetchLotteryInfo(contract);
-      
     } catch (err) {
       console.error(err);
       alert("Error al cerrar lotería");
@@ -182,6 +187,10 @@ export default function LotteryStats() {
           </p>
           <p>
             <strong>Estado:</strong> {info.closed ? "Cerrada" : "Activa"}
+          </p>
+
+          <p>
+            {info.closed ? (<></>) : (<><strong>Finaliza:</strong> {formatDate(info.endTime)}</>) }
           </p>
 
           {!info.closed ? (
