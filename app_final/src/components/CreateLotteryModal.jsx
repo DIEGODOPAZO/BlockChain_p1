@@ -26,9 +26,10 @@ export default function CreateLotteryModal({ contract, onClose }) {
         commission || 0
       );
 
+      onClose();
+      
       await tx.wait();
 
-      onClose();
       alert("Lotería creada!");
     } catch (err) {
       console.error(err);

@@ -1,285 +1,294 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ethers } from "ethers";
 import { abis, addresses } from "../contracts";
 
-function LotteryStats() {
+export default function LotteryStats() {
   const { id } = useParams();
   const lotteryId = id;
-  
-  const [account, setAccount] = useState(null);
+
+  const [provider, setProvider] = useState(null);
+  const [contract, setContract] = useState(null);
+  const [userAddress, setUserAddress] = useState("");
   const [info, setInfo] = useState(null);
-  const [myTickets, setMyTickets] = useState("0");
-  const [isCreator, setIsCreator] = useState(false);
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [doingAction, setDoingAction] = useState(false);
+  const [buyAmount, setBuyAmount] = useState(1);
+  const [processing, setProcessing] = useState(false);
+  const [processingBuy, setProcessingBuy] = useState(false);
+  const [processingClose, setProcessingClose] = useState(false);
+  const [myTickets, setMyTickets] = useState(0);
 
-  const lotteryAbi = abis.lottery.abi;
-  const lotteryAddress = addresses.lottery;
+  // ---- UserTickets ---
+  const fetchMyTickets = async (contractInstance, user) => {
+    if (!contractInstance || !user) return;
 
-  const getContract = () => {
-    if (!window.ethereum) {
-      throw new Error("No se ha encontrado MetaMask.");
+    try {
+      const tickets = await contractInstance.getMyTickets(lotteryId, user);
+      setMyTickets(tickets.toString());
+    } catch (err) {
+      console.error("Error fetching my tickets:", err);
     }
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    return new ethers.Contract(lotteryAddress, lotteryAbi, signer);
   };
 
-  const connectWallet = async () => {
-    try {
-      if (!window.ethereum) {
-        alert("Instala MetaMask para continuar");
-        return;
-      }
+  // --- INIT: Load wallet + contract ---
+  useEffect(() => {
+    async function init() {
+      if (!window.ethereum) return alert("MetaMask no detectado");
+
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
-      setAccount(accounts[0]);
-      setMessage("Wallet conectada");
-    } catch (e) {
-      console.error(e);
-      setMessage("Error al conectar la wallet");
+
+      const address = accounts[0];
+      const providerTmp = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = providerTmp.getSigner();
+
+      const contractTmp = new ethers.Contract(
+        addresses.lottery,
+        abis.lottery,
+        signer
+      );
+
+      setProvider(providerTmp);
+      setContract(contractTmp);
+      setUserAddress(address);
+
+      fetchMyTickets(contractTmp, address);
+
+      fetchLotteryInfo(contractTmp);
     }
+
+    init();
+  }, []);
+
+  // --- LOAD LOTTERY INFO ---
+  const fetchLotteryInfo = async (contractInstance) => {
+    if (!contractInstance) return;
+    setLoading(true);
+
+    try {
+      const data = await contractInstance.getLotteryInfo(lotteryId);
+      setInfo(data);
+      fetchMyTickets(contractInstance, userAddress);
+    } catch (err) {
+      console.error("Error loading lottery:", err);
+    }
+
+    setLoading(false);
   };
 
-  const loadData = async () => {
-    if (!account) return;
+  // --- BUY TICKETS ---
+  const buyTickets = async () => {
+    if (!contract || !info) return;
+
+    setProcessingBuy(true);
+    setProcessing(true);
     try {
-      setLoading(true);
-      setMessage("Cargando datos...");
-
-      const contract = getContract();
-
-      const lotteryInfo = await contract.getLotteryInfo(lotteryId);
-      setInfo(lotteryInfo);
-
-      const creator = lotteryInfo.creator;
-      if (creator && account) {
-        setIsCreator(creator.toLowerCase() === account.toLowerCase());
-      }
-
-      const ticketsBn = await contract.getMyTickets(lotteryId, account);
-      setMyTickets(ticketsBn.toString());
-
-      const participants = await contract.getParticipants(lotteryId);
-      for (const addr of participants) {
-        const stats = await contract.getParticipantStats(addr);
-        console.log("Participant stats", addr, stats);
-      }
-
-      setMessage("Datos cargados");
-    } catch (e) {
-      console.error(e);
-      setMessage("Error al cargar datos de la lotería");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (account) {
-      loadData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account, lotteryId]);
-
-  const handleNumTickets = async () => {
-    try {
-      if (!account) {
-        await connectWallet();
-      }
-      if (!account) return;
-
-      const contract = getContract();
-      const ticketsBn = await contract.getMyTickets(lotteryId, account);
-      const n = ticketsBn.toString();
-      setMyTickets(n);
-      alert(`Tienes ${n} tickets en la lotería ${lotteryId}`);
-    } catch (e) {
-      console.error(e);
-      setMessage("Error al obtener tus tickets");
-    }
-  };
-
-  const handleBuy = async () => {
-    try {
-      if (!account) {
-        await connectWallet();
-      }
-      if (!account || !info) return;
-
-      setDoingAction(true);
-      setMessage("Comprando ticket...");
-
-      const contract = getContract();
-      const priceWei = info.ticketPrice;
-
-      const tx = await contract.buyTickets(lotteryId, 1, { value: priceWei });
+      const totalPrice = info.ticketPrice.mul(buyAmount);
+      const tx = await contract.buyTickets(lotteryId, buyAmount, {
+        value: totalPrice,
+      });
       await tx.wait();
 
-      await loadData();
-      setMessage("Ticket comprado");
-    } catch (e) {
-      console.error(e);
-      setMessage("Error al comprar ticket");
-    } finally {
-      setDoingAction(false);
+      fetchLotteryInfo(contract);
+      alert("Tickets comprados correctamente");
+    } catch (err) {
+      console.error(err);
+      alert("Error al comprar tickets");
     }
+    setProcessing(false);
+    setProcessingBuy(false);
   };
 
-  const handleClose = async () => {
+  // --- CLOSE LOTTERY ---
+  const closeLottery = async () => {
+    if (!contract) return;
+
+    setProcessingClose(true);
+    setProcessing(true);
     try {
-      if (!account) {
-        await connectWallet();
-      }
-      if (!account) return;
-
-      setDoingAction(true);
-      setMessage("Cerrando lotería...");
-
-      const contract = getContract();
       const tx = await contract.closeLottery(lotteryId);
       await tx.wait();
-
-      await loadData();
-      setMessage("Lotería cerrada");
-    } catch (e) {
-      console.error(e);
-      setMessage("Error al cerrar la lotería");
-    } finally {
-      setDoingAction(false);
+      fetchLotteryInfo(contract);
+      
+    } catch (err) {
+      console.error(err);
+      alert("Error al cerrar lotería");
     }
+
+    setProcessingClose(false);
+    setProcessing(false);
   };
 
-  const handleChangeCommission = async () => {
-    if (!info) {
-      alert("Primero carga los datos de la lotería");
-      return;
-    }
-
-    const actual = info.commissionPercent.toString();
-    const nuevoStr = window.prompt(
-      "Nueva comisión (base 10000, ej: 200 = 2.00%)",
-      actual
-    );
-    if (nuevoStr === null) return;
-
-    const nuevo = parseInt(nuevoStr, 10);
-    if (Number.isNaN(nuevo)) {
-      alert("Valor no válido");
-      return;
-    }
-
-    try {
-      if (!account) {
-        await connectWallet();
-      }
-      if (!account) return;
-
-      setDoingAction(true);
-      setMessage("Cambiando comisión...");
-
-      const contract = getContract();
-      const tx = await contract.setLotteryCommission(lotteryId, nuevo);
-      await tx.wait();
-
-      await loadData();
-      setMessage("Comisión cambiada");
-    } catch (e) {
-      console.error(e);
-      setMessage("Error al cambiar la comisión");
-    } finally {
-      setDoingAction(false);
-    }
-  };
+  // --- HELPERS ---
+  const formatEth = (wei) => ethers.utils.formatEther(wei || 0);
 
   return (
-    <div
-      style={{
-        maxWidth: "500px",
-        margin: "2rem auto",
-        padding: "1.5rem",
-        border: "1px solid #ccc",
-        borderRadius: "10px",
-        textAlign: "center",
-      }}
-    >
-      <h1>Stats of my Lottery</h1>
-      <p style={{ color: "#666", marginTop: "0.5rem" }}>Lottery ID: {lotteryId}</p>
-
-      {message && (
-        <p style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>{message}</p>
-      )}
-
-      {!account && (
-        <button
-          onClick={connectWallet}
-          style={{ marginTop: "1rem", marginBottom: "1rem" }}
+    <div style={{ padding: "40px" }}>
+      {loading || !info ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "100px",
+          }}
         >
-          Conectar wallet
-        </button>
-      )}
+          <div
+            style={{
+              border: "4px solid #ddd",
+              borderTop: "4px solid #3b82f6",
+              borderRadius: "50%",
+              width: "40px",
+              height: "40px",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+        </div>
+      ) : (
+        <div
+          style={{
+            maxWidth: "700px",
+            margin: "0 auto",
+            padding: "25px",
+            border: "1px solid #ddd",
+            borderRadius: "12px",
+          }}
+        >
+          <h1 style={{ marginBottom: "10px" }}>{info.name}</h1>
 
-      {account && (
-        <p style={{ fontSize: "0.8rem", marginBottom: "1rem" }}>
-          Connected: <code>{account}</code>
-        </p>
-      )}
+          <p>
+            <strong>ID:</strong> {info.id.toString()}
+          </p>
+          <p>
+            <strong>Creador:</strong> {info.creator}
+          </p>
+          <p>
+            <strong>Precio Ticket:</strong> {formatEth(info.ticketPrice)} ETH
+          </p>
+          <p>
+            <strong>Máx Tickets:</strong> {info.maxTickets.toString()}
+          </p>
+          <p>
+            <strong>Vendidos:</strong> {info.ticketsSold.toString()}
+          </p>
+          <p>
+            <strong>Mis Tickets:</strong> {myTickets}
+          </p>
+          <p>
+            <strong>Comisión:</strong> {info.commissionPercent.toString()}%
+          </p>
+          <p>
+            <strong>Pozo:</strong> {formatEth(info.pot)} ETH
+          </p>
+          <p>
+            <strong>Estado:</strong> {info.closed ? "Cerrada" : "Activa"}
+          </p>
 
-      {loading && <p>Cargando datos...</p>}
+          {!info.closed ? (
+            <>
+              {/* ---- BUY TICKETS ---- */}
+              <div style={{ marginTop: "20px" }}>
+                <h3>Comprar Tickets</h3>
+                <input
+                  type="number"
+                  min="1"
+                  value={buyAmount}
+                  onChange={(e) => setBuyAmount(Number(e.target.value))}
+                  style={{
+                    padding: "8px",
+                    width: "100px",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                  }}
+                />
 
-      {info && (
-        <div style={{ fontSize: "0.9rem", marginBottom: "1rem" }}>
-          <p>
-            <strong>Name:</strong> {info.name}
-          </p>
-          <p>
-            <strong>Ticket price:</strong>{" "}
-            {ethers.utils.formatEther(info.ticketPrice)} ETH
-          </p>
-          <p>
-            <strong>Tickets sold:</strong> {info.ticketsSold.toString()}
-          </p>
-          <p>
-            <strong>Closed:</strong> {info.closed ? "Yes" : "No"}
-          </p>
-          <p>
-            <strong>My tickets:</strong> {myTickets}
-          </p>
+                <button
+                  onClick={buyTickets}
+                  disabled={processing}
+                  style={{
+                    marginLeft: "15px",
+                    padding: "10px 20px",
+                    background: processing ? "#93c5fd" : "#3b82f6",
+                    color: "white",
+                    borderRadius: "8px",
+                    border: "none",
+                    cursor: processing ? "not-allowed" : "pointer",
+                    opacity: processing ? 0.6 : 1,
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!processing)
+                      e.currentTarget.style.background = "#1d4ed8";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!processing)
+                      e.currentTarget.style.background = "#3b82f6";
+                  }}
+                >
+                  {processingBuy ? "Procesando..." : "Comprar"}
+                </button>
+              </div>
+
+              {/* ---- CLOSE LOTTERY (IF USER IS CREATOR) ---- */}
+              {userAddress.toLowerCase() === info.creator.toLowerCase() && (
+                <button
+                  onClick={closeLottery}
+                  disabled={processing}
+                  style={{
+                    marginTop: "25px",
+                    padding: "12px 25px",
+                    background: processing ? "#fca5a5" : "#dc2626",
+                    color: "white",
+                    borderRadius: "8px",
+                    border: "none",
+                    cursor: processing ? "not-allowed" : "pointer",
+                    width: "100%",
+                    opacity: processing ? 0.6 : 1,
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!processing)
+                      e.currentTarget.style.background = "#b91c1c";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!processing)
+                      e.currentTarget.style.background = "#dc2626";
+                  }}
+                >
+                  {processingClose ? "Cerrando..." : "Cerrar Lotería"}
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              {/* ---- WINNER ---- */}
+              <div
+                style={{
+                  padding: "15px",
+                  marginTop: "20px",
+                  background: "#e8ffe8",
+                  borderRadius: "8px",
+                  border: "1px solid #b6ffb6",
+                }}
+              >
+                <h3>🏆 Ganador</h3>
+                {info.winner === ethers.constants.AddressZero ? (
+                  <p>Aún no seleccionado</p>
+                ) : (
+                  <>
+                    <p>
+                      <strong>Address:</strong> {info.winner}
+                    </p>
+                    <p>
+                      <strong>Premio:</strong> {formatEth(info.pot)} ETH
+                    </p>
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "0.5rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <button onClick={handleNumTickets}>Num tickets</button>
-
-        {!isCreator && (
-          <button onClick={handleBuy} disabled={doingAction}>
-            {doingAction ? "Buying..." : "Buy"}
-          </button>
-        )}
-
-        {isCreator && (
-          <>
-            <button onClick={handleClose} disabled={doingAction}>
-              {doingAction ? "Closing..." : "Close"}
-            </button>
-            <button onClick={handleChangeCommission} disabled={doingAction}>
-              Change commission
-            </button>
-          </>
-        )}
-      </div>
     </div>
   );
 }
-
-export default LotteryStats;
