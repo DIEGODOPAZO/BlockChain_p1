@@ -77,6 +77,19 @@
 				"anonymous": false,
 				"inputs": [
 					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "RandomRequestedForLottery",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
 						"indexed": true,
 						"internalType": "uint256",
 						"name": "lotteryId",
@@ -658,6 +671,37 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "random",
+				"outputs": [
+					{
+						"internalType": "contract GetRandom",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "requestId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "randomValue",
+						"type": "uint256"
+					}
+				],
+				"name": "receiveRandom",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint256",
@@ -872,28 +916,92 @@
 		"remappings": []
 	},
 	"sources": {
+		"@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol": {
+			"keccak256": "0xf73016e2473f54ab8d5c7e3c4ab2fa280a185ccfc80d2be48ac5d18016c3f717",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://f051e82857cc14b3a975f8c09eece2ca349d4954e83165a2b56ed659aad40c9e",
+				"dweb:/ipfs/QmRNMQ5jQQ3a9LZgsQqmQxYJxhTQKQrRtP4Wc7TAjYS43N"
+			]
+		},
+		"@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwnerWithProposal.sol": {
+			"keccak256": "0x521cf41e477e502d133e050a5f35625f2ec652327af7f1b21abf5b898f9b8df9",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://65198b68ed110b9900174be8b3ef682da28f7645fbaa21e4ccd97e8b4a971501",
+				"dweb:/ipfs/QmfDu99JhbBFnAFdw95jjnGgXEohyRvA7XPQf4NEpheytc"
+			]
+		},
+		"@chainlink/contracts/src/v0.8/shared/interfaces/IOwnable.sol": {
+			"keccak256": "0x19f12817caa863b6785cf1e9085c66a93042fe906e41926bcb4a12bec9558d60",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://d1cf3f784c42642747c263cfa7b9462846d5ce8ff84467470ec2703a659b925d",
+				"dweb:/ipfs/Qmbz2qYFMNM3CVYNKgwJV5Kqx5FFHSrb8zXEsYbJXyjFnP"
+			]
+		},
+		"@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol": {
+			"keccak256": "0xb8be2be9ad825b833975179c27367a01dfbaa987751f298205f16ab73afcf703",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://ea682207321f6c8fb68c51d524fb66cfc384555a7d9eb978682ab3185bf51fef",
+				"dweb:/ipfs/QmZFEK8JhYU6bGyJH28EcpUvQZdcD1zr6EeZmf8Ko7KBFt"
+			]
+		},
+		"@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol": {
+			"keccak256": "0x7fa2fd69fb4a3313506f4d556667fd0c918d43441dbdb6ffa41339ac97e1e5b1",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://d97cea325765ba779ad1b858608da8e1f4e5a297785941a039f2d2b3b0384de0",
+				"dweb:/ipfs/QmawxEDkw6UrJuRJJK8ZdqjT98hjv2rifjEe8MJtKeL7bc"
+			]
+		},
+		"@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol": {
+			"keccak256": "0xd1b8053c786c6771bc5d27ea0cfa6fbf73fbbc0f3d900ac0fea50a7ebcd581b1",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://48b0ea904bf7f2f9e742a64d074af5bb7895f0ee309990d1088a4fb6361efc96",
+				"dweb:/ipfs/QmauY45Bzw6wDKFKMZHJSRi8ZybjuegLrQp9e1M14CUGFy"
+			]
+		},
+		"@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFSubscriptionV2Plus.sol": {
+			"keccak256": "0xb782e66b6a2a87df6f70c2a8aa3aa6e4db5711edfe5a831b9d585a4b975bb7a8",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://9cf200f084cf8f20c368c1cebeb06f4a1fa2392b282b7ffc1e01f824718b00a1",
+				"dweb:/ipfs/QmbZNV5LxMLD2m9nLYkARyq39ouq28kVPPbUD1yDVeCp8v"
+			]
+		},
+		"@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol": {
+			"keccak256": "0xb0b1a6f3f0d59aca5c805994d8f64c24f570c280422f976dbae20f8b5b24b47c",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://f50a9db38564469f443866bb1e8067f4f934616195afe282c00733d1c1cc7419",
+				"dweb:/ipfs/QmfKLv5z7KzxNKCZfH9wC9b4ukkXqz8w8HEqmJcYAvdREH"
+			]
+		},
 		"Ejercicio5/Lotery/contracts/GetRandom.sol": {
-			"keccak256": "0xb4c3c222b2ab25483ad43c0695bf30a8f4b75670dfd1760a09f14b0ce0a25012",
+			"keccak256": "0xec3d929444bc437cc824d51f128753754dd6b1fe1e916a4ef8df49d9a21b2f85",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://1c6fe09620b1e6b159eaed5d81e23daefd2de668199045fb032484d85c3f5cdb",
-				"dweb:/ipfs/QmcJvi84nMAkfMseTL5tqAZFSUhXetG2mhMFxfeUndzUdi"
+				"bzz-raw://ec9f24d9fef8d7c610cb4f7287bc39125cd49765549db5798df1f59beb6f55b0",
+				"dweb:/ipfs/QmaNgSVraZe3fUZUEMKTgjQHmJbabRWMsAjEgqudk4yxoB"
 			]
 		},
 		"Ejercicio5/Lotery/contracts/Lottery.sol": {
-			"keccak256": "0xd777ee9d533b9b7ebed9941cffad053cf9945dfb1338e7bea8a52f9c54fe33d8",
+			"keccak256": "0x206f78ee3b4a6bfa4f2aed8bd15d62089940af4831a325cc847cc73bcfb5740a",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://c8570089019eed60b2e8ebbabf63a612e2baff59632b82489213f4c4d2483f7a",
-				"dweb:/ipfs/QmXDSzdbUyU6NcCkceYesAfzqEGzZSXRBAnqN1afhrL2dZ"
+				"bzz-raw://065fc0e966487a6303360403efd4aa2621c7848cfb76a636c104d01111a2a59b",
+				"dweb:/ipfs/QmNf9Fa3xtRUjRyzvGem15NcS95knmZFVaM6aRvCU3dJ2b"
 			]
 		},
 		"Ejercicio5/Lotery/contracts/LotteryStorage.sol": {
-			"keccak256": "0xae78d9790170f36a8143d18d2a3f80befa984d91c1eff06650043f07c6f8c5bb",
+			"keccak256": "0xa9837801bb6247bf222f40ea8deb3522a2b1d0acbb50ca62775ebd08d05959e7",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://6ed0b10d9541e7e45ec0fa0e579f8a2bb28dbbc7cc5b1bf2e0f3114cdd7929f0",
-				"dweb:/ipfs/QmU6TfCmJP98Lz7KvexgTd7t2uQjySE1J6DbrdnRd8pm9F"
+				"bzz-raw://40e103e407efa737346f2f59d25892dce56e530b0bce763a6e8fa92fca0c475d",
+				"dweb:/ipfs/QmNwhSs16saF6gz3oHCmTg9TxFLGQX1iTw2NFPzHpAJqti"
 			]
 		}
 	},

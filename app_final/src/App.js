@@ -4,6 +4,7 @@ import { create } from "kubo-rpc-client";
 import { ethers } from "ethers";
 import { Buffer } from "buffer";
 import { addresses, abis } from "./contracts";
+import LotteryStats from "./components/LotteryStats";
 
 async function connectToSepolia() {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -185,7 +186,10 @@ function App() {
             Upload
           </button>
         </form>
-      </header>    
+      </header>
+
+      <LotteryStats lotteryId={0} />
+    
     </div>
   );
 }
