@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { ethers } from "ethers";
 import { abis, addresses } from "../contracts";
 
-function LotteryStats({ lotteryId }) {
+function LotteryStats() {
+  const { id } = useParams();
+  const lotteryId = id;
+  
   const [account, setAccount] = useState(null);
   const [info, setInfo] = useState(null);
   const [myTickets, setMyTickets] = useState("0");

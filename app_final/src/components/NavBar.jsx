@@ -1,11 +1,15 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function Navbar({ onNavigate, currentPage }) {
+export default function Navbar({ currentPage }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
     <div
       style={{
         width: "100%",
-        background: "#3b82f6", // azul más claro
+        background: "#3b82f6",
         padding: "15px 25px",
         display: "flex",
         justifyContent: "center",
@@ -20,19 +24,25 @@ export default function Navbar({ onNavigate, currentPage }) {
       }}
     >
       {["Home", "MyLotteries", "IPFS"].map((item) => {
-        const isActive = currentPage === item;
+        const pathMap = {
+          Home: "/",
+          MyLotteries: "/mylotteries",
+          IPFS: "/ipfs",
+        };
+
+        const isActive = location.pathname === pathMap[item];
 
         return (
           <button
             key={item}
-            onClick={() => onNavigate(item)}
+            onClick={() => navigate(pathMap[item])}
             style={{
               padding: "10px 20px",
               borderRadius: "8px",
               border: "none",
               cursor: "pointer",
               fontSize: "16px",
-              background: isActive ? "#1d4ed8" : "#60a5fa", // activo / normal
+              background: isActive ? "#1d4ed8" : "#60a5fa",
               color: "white",
               transition: "0.2s",
               fontWeight: isActive ? "bold" : "normal",

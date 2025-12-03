@@ -1,16 +1,13 @@
+import { useNavigate } from "react-router-dom";
+
 export default function LotteryCard({ data }) {
+  const navigate = useNavigate();
+
   const handleClick = () => {
-    // cambiar funcion en futuro
-    alert(
-       `Lotería #${data.id}
-        Nombre: ${data.name}
-        Creador: ${data.creator}
-        Tickets vendidos: ${data.ticketsSold}
-        Precio ticket: ${data.ticketPrice}`
-    );
+    navigate(`/lottery/${data.id}`);
   };
 
-   return (
+  return (
     <div
       onClick={handleClick}
       style={{
@@ -23,8 +20,8 @@ export default function LotteryCard({ data }) {
         display: "flex",
         flexDirection: "column",
         gap: "4px",
-        width: "90%",          // ← IMPORTANTE
-        minHeight: "70px",      // ← no se corta y no es tan grande
+        width: "90%", // ← IMPORTANTE
+        minHeight: "70px", // ← no se corta y no es tan grande
         boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}

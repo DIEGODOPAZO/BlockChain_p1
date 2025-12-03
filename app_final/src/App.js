@@ -1,24 +1,23 @@
-import "./App.css";
-import { useState } from "react";
-
-import Home from "./components/Home";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/NavBar";
+import Home from "./components/Home";
 import MyLotteries from "./components/MyLotteries";
 import IpfsUploader from "./components/IpfsUploader";
+import LotteryStats from "./components/LotteryStats";
 
 function App() {
-  const [page, setPage] = useState("Home");
-
   return (
-    <div className="App">
-      <Navbar onNavigate={setPage} currentPage={page} />
-
+    <BrowserRouter>
+      <Navbar />
       <div style={{ marginTop: "90px" }}>
-        {page === "Home" && <Home />}
-        {page === "MyLotteries" && <MyLotteries />}
-        {page === "IPFS" && <IpfsUploader />}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/mylotteries" element={<MyLotteries />} />
+          <Route path="/ipfs" element={<IpfsUploader />} />
+          <Route path="/lottery/:id" element={<LotteryStats />} />
+        </Routes>
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
 
