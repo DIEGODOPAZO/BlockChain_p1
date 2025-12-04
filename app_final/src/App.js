@@ -4,6 +4,7 @@ import Home from "./components/Home";
 import MyLotteries from "./components/MyLotteries";
 import IpfsUploader from "./components/IpfsUploader";
 import LotteryStats from "./components/LotteryStats";
+import Profile from "./components/Profile";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/mylotteries" element={<MyLotteries />} />
           <Route path="/ipfs" element={<IpfsUploader />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/lottery/:id" element={<LotteryStats />} />
         </Routes>
       </div>

@@ -23,11 +23,12 @@ export default function Navbar({ currentPage }) {
         boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
       }}
     >
-      {["Home", "MyLotteries", "IPFS"].map((item) => {
+      {["Home", "MyLotteries", "IPFS", "Profile"].map((item) => {
         const pathMap = {
           Home: "/",
           MyLotteries: "/mylotteries",
           IPFS: "/ipfs",
+          Profile: "/profile"
         };
 
         const isActive = location.pathname === pathMap[item];
