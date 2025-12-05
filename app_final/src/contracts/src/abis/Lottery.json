@@ -39,6 +39,25 @@
 				"type": "uint256"
 			},
 			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "cid",
+				"type": "string"
+			}
+		],
+		"name": "DescriptionUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "lotteryId",
+				"type": "uint256"
+			},
+			{
 				"indexed": true,
 				"internalType": "address",
 				"name": "closer",
@@ -245,6 +264,11 @@
 				"internalType": "uint256",
 				"name": "commissionPercent",
 				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "descriptionCID",
+				"type": "string"
 			}
 		],
 		"name": "createLottery",
@@ -407,6 +431,11 @@
 						"internalType": "address[]",
 						"name": "participants",
 						"type": "address[]"
+					},
+					{
+						"internalType": "string",
+						"name": "descriptionCID",
+						"type": "string"
 					}
 				],
 				"internalType": "struct LotteryStorage.LotteryView",
@@ -601,19 +630,31 @@
 				"type": "uint256"
 			},
 			{
-				"internalType": "bool",
-				"name": "closed",
-				"type": "bool"
-			},
-			{
-				"internalType": "address",
-				"name": "winner",
-				"type": "address"
+				"components": [
+					{
+						"internalType": "bool",
+						"name": "closed",
+						"type": "bool"
+					},
+					{
+						"internalType": "address",
+						"name": "winner",
+						"type": "address"
+					}
+				],
+				"internalType": "struct LotteryStorage.Winning",
+				"name": "winning",
+				"type": "tuple"
 			},
 			{
 				"internalType": "uint256",
 				"name": "pot",
 				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "descriptionCID",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",

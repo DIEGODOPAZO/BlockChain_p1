@@ -1,13 +1,32 @@
 [
 	{
+		"anonymous": false,
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "lotteryId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "cid",
+				"type": "string"
 			}
 		],
-		"name": "participationImageCID",
+		"name": "DescriptionStored",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "descriptionCID",
 		"outputs": [
 			{
 				"internalType": "string",
@@ -21,12 +40,36 @@
 	{
 		"inputs": [
 			{
+				"internalType": "uint256",
+				"name": "lotteryId",
+				"type": "uint256"
+			}
+		],
+		"name": "getDescription",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "lotteryId",
+				"type": "uint256"
+			},
+			{
 				"internalType": "string",
 				"name": "cid",
 				"type": "string"
 			}
 		],
-		"name": "setParticipationImageCID",
+		"name": "setDescription",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
