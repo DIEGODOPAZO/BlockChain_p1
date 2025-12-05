@@ -47,6 +47,9 @@ contract LotteryStorage {
         uint256 newPercent
     );
 
+    // Nuevo evento para descripciones
+    event DescriptionUpdated(uint256 indexed lotteryId, string cid);
+
     // ============================================
     // STRUCTS
     // ============================================
@@ -75,17 +78,21 @@ contract LotteryStorage {
 
         uint256 commissionPercent; // porcentaje como base de 10000 (ej. 200 = 2.00%)
 
-        bool closed;
-
-        address winner;
+        Winning winning;
 
         uint256 pot;               // total acumulado 
 
         // corrección
         mapping(uint256 => address) ticketOwner; // ticketId, dirección del dueño
 
-
+        string descriptionCID;
     }
+
+    struct Winning {
+        bool closed;
+        address winner;
+    }
+
 
     // Usado solo para devolver info de loterias
     struct LotteryView {
@@ -102,6 +109,7 @@ contract LotteryStorage {
         address winner;
         uint256 pot;
         address[] participants;
+        string descriptionCID;
     }
 
     // ============================================

@@ -22,7 +22,7 @@ contract Lottery is LotteryStorage{
         // corrección
         activeLotteriesCount = 0;
         // el parametro es el addres del contrato desplegado en sepolia
-        random = GetRandom(0x7C053f19C943590fcBf06d8Ad1dF9AC7c48AE807);
+        random = GetRandom(0x166FE00E4dF6beB57B180A96d265CB11e1c25390);
     }
     
     // ============================================
@@ -43,7 +43,8 @@ contract Lottery is LotteryStorage{
         uint256 ticketPrice,
         uint256 maxTickets,
         uint256 endTime,
-        uint256 commissionPercent
+        uint256 commissionPercent,
+        string memory descriptionCID  
     ) external returns (uint256) {
         require(ticketPrice > 0, "Ticket price must be > 0");
         require(
@@ -70,9 +71,10 @@ contract Lottery is LotteryStorage{
         newLot.startTime = block.timestamp;
         newLot.endTime = endTime;
         newLot.commissionPercent = commission;
-        newLot.closed = false;
-        newLot.winner = address(0);
+        newLot.winning.closed = false;
+        newLot.winning.winner = address(0);
         newLot.pot = 0;
+        newLot.descriptionCID = descriptionCID;
         
         nextLotteryId++;
 
@@ -108,7 +110,7 @@ contract Lottery is LotteryStorage{
             "Only creator or owner"
         );
         require(lotteryId < nextLotteryId, "Lottery does not exist");
-        require(!lot.closed, "Lottery is closed");
+        require(!lot.winning.closed, "Lottery is closed");
         require(newPercent <= MAX_COMMISSION_PERCENT, "Commission too high");
         
         uint256 oldPercent = lot.commissionPercent;
@@ -127,7 +129,7 @@ contract Lottery is LotteryStorage{
     
         uint256 totalPrice = quantity * lot.ticketPrice;
 
-        require(!lot.closed, "Lottery is closed");
+        require(!lot.winning.closed, "Lottery is closed");
         require(quantity > 0, "Quantity must be greater than 0");
         require(msg.value == totalPrice, "Invalid amount of ETH sent");
 
@@ -178,7 +180,7 @@ contract Lottery is LotteryStorage{
             "Only creator or owner can close"
         );
         require(lotteryId < nextLotteryId, "Lottery does not exist");
-        require(!lot.closed, "Lottery already closed");
+        require(!lot.winning.closed, "Lottery already closed");
         require(lot.ticketsSold > 0, "No tickets sold");
         
         _closeLottery(lotteryId);
@@ -193,8 +195,8 @@ contract Lottery is LotteryStorage{
         Lottery storage lot = lotteries[lotteryId];
         
         require(lotteryId < nextLotteryId, "Lottery does not exist");
-        require(lot.closed, "Lottery not closed yet");
-        require(msg.sender == lot.winner, "Only winner can claim");
+        require(lot.winning.closed, "Lottery not closed yet");
+        require(msg.sender == lot.winning.winner, "Only winner can claim");
         require(pendingWithdrawals[msg.sender] > 0, "No prize to claim");
         
         uint256 amount = pendingWithdrawals[msg.sender];
@@ -228,7 +230,7 @@ contract Lottery is LotteryStorage{
     function _closeLottery(uint256 lotteryId) internal {
         Lottery storage lot = lotteries[lotteryId];
         
-        lot.closed = true;
+        lot.winning.closed = true;
         if (activeLotteriesCount > 0) {
             activeLotteriesCount--;
         }
@@ -256,7 +258,7 @@ contract Lottery is LotteryStorage{
         uint256 winningTicketNumber = randomValue % lot.ticketsSold;
         
         address winner = _findWinnerByTicketNumber(lotteryId, winningTicketNumber);
-        lot.winner = winner;
+        lot.winning.winner = winner;
         
         // Calcular distribución de fondos
         uint256 totalPot = lot.pot;
@@ -325,10 +327,11 @@ contract Lottery is LotteryStorage{
             startTime: lot.startTime,
             endTime: lot.endTime,
             commissionPercent: lot.commissionPercent,
-            closed: lot.closed,
-            winner: lot.winner,
+            closed: lot.winning.closed,
+            winner: lot.winning.winner,
             pot: lot.pot,
-            participants: lot.participants
+            participants: lot.participants,
+            descriptionCID: lot.descriptionCID
         });
     }
 
@@ -408,7 +411,7 @@ contract Lottery is LotteryStorage{
         // Contar activas
         uint256 count = 0;
         for (uint256 i = 0; i < nextLotteryId; i++) {
-            if (!lotteries[i].closed && 
+            if (!lotteries[i].winning.closed && 
                 (lotteries[i].endTime == 0 || block.timestamp < lotteries[i].endTime)) {
                 count++;
             }
@@ -419,7 +422,7 @@ contract Lottery is LotteryStorage{
         uint256 index = 0;
         
         for (uint256 i = 0; i < nextLotteryId; i++) {
-            if (!lotteries[i].closed && 
+            if (!lotteries[i].winning.closed && 
                 (lotteries[i].endTime == 0 || block.timestamp < lotteries[i].endTime)) {
                 result[index] = i;
                 index++;
@@ -439,7 +442,7 @@ contract Lottery is LotteryStorage{
         
         Lottery storage lot = lotteries[lotteryId];
         
-        if (lot.closed || lot.ticketsSold == 0) {
+        if (lot.winning.closed || lot.ticketsSold == 0) {
             return false;
         }
         
@@ -487,7 +490,7 @@ contract Lottery is LotteryStorage{
                 lotteriesParticipated++;
                 totalTickets += tickets;
             }
-            if (lotteries[i].winner == participant) {
+            if (lotteries[i].winning.winner == participant) {
                 lotteriesWon++;
             }
         }
