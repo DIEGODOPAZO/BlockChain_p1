@@ -12,7 +12,11 @@ export default function Profile() {
   const [processing, setProcessing] = useState(false);
   const [myTickets, setMyTickets] = useState([]);
   const navigate = useNavigate();
-
+  const [stats, setStats] = useState({
+    lotteriesParticipated: 0,
+    totalTickets: 0,
+    lotteriesWon: 0,
+  });
 
   // --- INIT WALLET + CONTRACT ---
   useEffect(() => {
@@ -35,6 +39,8 @@ export default function Profile() {
           signer
         );
 
+        fetchParticipantStats(contractTmp, addr);
+
         setProvider(providerTmp);
         setContract(contractTmp);
         setUserAddress(addr);
@@ -53,12 +59,28 @@ export default function Profile() {
     init();
   }, []);
 
+  const fetchParticipantStats = async (contractInstance, user) => {
+    if (!contractInstance || !user) return;
+
+    try {
+      const result = await contractInstance.getParticipantStats(user);
+      // result es un array: [lotteriesParticipated, totalTickets, lotteriesWon]
+      setStats({
+        lotteriesParticipated: result[0].toNumber(),
+        totalTickets: result[1].toNumber(),
+        lotteriesWon: result[2].toNumber(),
+      });
+    } catch (err) {
+      console.error("Error al obtener estadísticas del participante:", err);
+    }
+  };
+
   const fetchUserTickets = async (c, user) => {
     try {
       const total = await c.getTotalLotteries();
       const items = [];
 
-      for (let id = 1; id <= total; id++) {
+      for (let id = 0; id <= total; id++) {
         const qty = await c.getMyTickets(id, user);
         if (qty > 0) {
           items.push({
@@ -190,6 +212,17 @@ export default function Profile() {
               </div>
             ))}
           </div>
+          <h2 style={{ marginTop: "30px" }}>Estadísticas del Jugador</h2>
+          <p>
+            <strong>Loterías participadas:</strong>{" "}
+            {stats.lotteriesParticipated}
+          </p>
+          <p>
+            <strong>Total de tickets:</strong> {stats.totalTickets}
+          </p>
+          <p>
+            <strong>Loterías ganadas:</strong> {stats.lotteriesWon}
+          </p>
 
           <h2 style={{ marginTop: "30px" }}>Premios</h2>
           <p>
