@@ -13,11 +13,6 @@ export default function Profile() {
   const [myTickets, setMyTickets] = useState([]);
   const navigate = useNavigate();
 
-  // Tickets simulados (hasta que conectemos al contrato)
-  const fakeTickets = [
-    { lotteryId: 1, quantity: 3 },
-    { lotteryId: 7, quantity: 1 },
-  ];
 
   // --- INIT WALLET + CONTRACT ---
   useEffect(() => {

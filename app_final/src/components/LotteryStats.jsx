@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ethers } from "ethers";
 import { abis, addresses } from "../contracts";
+import { create } from "kubo-rpc-client";
 
 export default function LotteryStats() {
   const { id } = useParams();
@@ -17,6 +18,21 @@ export default function LotteryStats() {
   const [processingBuy, setProcessingBuy] = useState(false);
   const [processingClose, setProcessingClose] = useState(false);
   const [myTickets, setMyTickets] = useState(0);
+  const [description, setDescription] = useState("");
+  const [ipfsClient, setIpfsClient] = useState(null);
+
+  // --- Init IPFS ---
+  useEffect(() => {
+    async function initIPFS() {
+      try {
+        const client = await create({ url: "http://127.0.0.1:5001" });
+        setIpfsClient(client);
+      } catch (err) {
+        console.error("Error conectando IPFS:", err);
+      }
+    }
+    initIPFS();
+  }, []);
 
   // ---- UserTickets ---
   const fetchMyTickets = async (contractInstance, user) => {
@@ -76,6 +92,21 @@ export default function LotteryStats() {
       const data = await contractInstance.getLotteryInfo(lotteryId);
       setInfo(data);
       fetchMyTickets(contractInstance, userAddress);
+
+      // --- Obtener descripción desde IPFS ---
+      if (ipfsClient && data.descriptionCID) {
+        try {
+          const stream = ipfsClient.cat(data.descriptionCID);
+          let raw = "";
+          for await (const chunk of stream) {
+            raw += new TextDecoder().decode(chunk);
+          }
+          const json = JSON.parse(raw);
+          setDescription(json.message || "");
+        } catch (err) {
+          console.error("Error obteniendo descripción desde IPFS:", err);
+        }
+      }
     } catch (err) {
       console.error("Error loading lottery:", err);
     }
@@ -83,6 +114,25 @@ export default function LotteryStats() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    if (!ipfsClient || !info?.descriptionCID) return;
+
+    async function fetchDescription() {
+      try {
+        const stream = ipfsClient.cat(info.descriptionCID);
+        let raw = "";
+        for await (const chunk of stream) {
+          raw += new TextDecoder().decode(chunk);
+        }
+        const json = JSON.parse(raw);
+        setDescription(json.message || "");
+      } catch (err) {
+        console.error("Error obteniendo descripción desde IPFS:", err);
+      }
+    }
+
+    fetchDescription();
+  }, [ipfsClient, info]);
   // --- BUY TICKETS ---
   const buyTickets = async () => {
     if (!contract || !info) return;
@@ -160,7 +210,6 @@ export default function LotteryStats() {
           }}
         >
           <h1 style={{ marginBottom: "10px" }}>{info.name}</h1>
-
           <p>
             <strong>ID:</strong> {info.id.toString()}
           </p>
@@ -188,11 +237,19 @@ export default function LotteryStats() {
           <p>
             <strong>Estado:</strong> {info.closed ? "Cerrada" : "Activa"}
           </p>
-
           <p>
-            {info.closed ? (<></>) : (<><strong>Finaliza:</strong> {formatDate(info.endTime)}</>) }
+            <strong>Descripción:</strong> {description}
+          </p>{" "}
+          {/* <-- Mostrar descripción */}
+          <p>
+            {info.closed ? (
+              <></>
+            ) : (
+              <>
+                <strong>Finaliza:</strong> {formatDate(info.endTime)}
+              </>
+            )}
           </p>
-
           {!info.closed ? (
             <>
               {/* ---- BUY TICKETS ---- */}
